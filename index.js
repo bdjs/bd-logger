@@ -24,7 +24,7 @@ module.exports = function (options) {
       datePattern: '-yyyy-MM-dd.log'
     }
   }
-  options = assign(options, defaultOptions)
+  options = assign(defaultOptions, options)
   var dirname = path.dirname(process.mainModule.filename);
   var logsPath = path.join(dirname, 'logs', options.app);
   if (!fs.existsSync(logsPath)) {
