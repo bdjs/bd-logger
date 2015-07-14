@@ -1,0 +1,29 @@
+{
+  "name": "bd-logger",
+  "version": "0.1.1",
+  "description": "bd logger helper",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bdjs/bd-logger.git"
+  },
+  "keywords": [
+    "bd",
+    "logger",
+    "bd-logger"
+  ],
+  "author": "mdemo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bdjs/bd-logger/issues"
+  },
+  "homepage": "https://github.com/bdjs/bd-logger#readme",
+  "dependencies": {
+    "mkdirp": "^0.5.1",
+    "object-assign": "^3.0.0",
+    "winston": "^1.0.1"
+  }
+}
