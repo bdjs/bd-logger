@@ -15,6 +15,16 @@ var createLogger = function (options) {
   return logger;
 };
 
+var alias = function(level){
+  switch(level){
+    case 'access': 
+      return 'info';
+      break;
+    default:
+      return level;   
+  }
+}
+
 module.exports = function (options) {
   options = options || {};
   var defaultOptions = {
@@ -35,7 +45,7 @@ module.exports = function (options) {
     var winstonOptions = assign(options.winston, {
       filename: path.join(logsPath, level)
     });
-    loggers[level] = createLogger(winstonOptions);
+    loggers[level] = createLogger(winstonOptions)[alias(level)];
   });
   return loggers;
 };
