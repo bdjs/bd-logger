@@ -6,7 +6,7 @@ var fs = require('fs');
 var mkdirp = require('mkdirp');
 var assign = require('object-assign');
 
-var createLogger = function (options) {
+var createLogger = function(options) {
   var logger = new (winston.Logger)({
     transports: [
       new (winston.transports.DailyRotateFile)(options)
@@ -15,33 +15,33 @@ var createLogger = function (options) {
   return logger;
 };
 
-var alias = function(level){
-  switch(level){
-    case 'access': 
+var alias = function(level) {
+  switch (level) {
+    case 'access':
       return 'info';
       break;
     default:
-      return level;   
+      return level;
   }
 }
 
-module.exports = function (options) {
+module.exports = function(options) {
   options = options || {};
   var defaultOptions = {
     app: 'app',
     levels: ['error', 'access', 'debug'],
     winston: {
       datePattern: '-yyyy-MM-dd.log'
-    }
+    },
+    root: path.dirname(process.mainModule.filename)
   }
   options = assign(defaultOptions, options)
-  var dirname = path.dirname(process.mainModule.filename);
-  var logsPath = path.join(dirname, 'logs', options.app);
+  var logsPath = path.join(options.root, 'logs', options.app);
   if (!fs.existsSync(logsPath)) {
     mkdirp.sync(logsPath);
   }
   var loggers = {};
-  options.levels.map(function(level){
+  options.levels.map(function(level) {
     var winstonOptions = assign(options.winston, {
       filename: path.join(logsPath, level)
     });
