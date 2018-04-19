@@ -5,34 +5,23 @@ const winston = require('winston')
 const fs = require('fs')
 const mkdirp = require('mkdirp')
 
+const DailyRotateFile = require('winston-daily-rotate-file')
+
 const isLocal = process.env.NODE_ENV === 'local'
-let colors
-if (isLocal) {
-  colors = require('colors')
-}
 
-let createLogger = options => new (winston.Logger)({
-  transports: [
-    new (winston.transports.DailyRotateFile)(options)
-  ]
-})
+const levels = ['access', 'error', 'warn']
 
-let alias = level => {
-  switch (level) {
-    case 'access':
-      return 'info'
-    default:
-      return level
-  }
-}
+let createLogger = options => winston.createLogger(options)
 
 let defaultOptions = {
   app: 'app',
-  levels: ['error', 'access', 'debug'],
-  winston: {
-    datePattern: '-yyyy-MM-dd.log'
+  dailyRotateFile: {
+    datePattern: 'YYYY-MM-DD',
+    maxSize: '20m',
+    maxFiles: '14d'
   },
-  root: path.dirname(process.mainModule.filename)
+  root: path.dirname(process.mainModule.filename),
+  format: winston.format.json()
 }
 
 module.exports = (options = {}) => {
@@ -45,12 +34,26 @@ module.exports = (options = {}) => {
     mkdirp.sync(logsPath)
   }
   let loggers = {}
-  options.levels.forEach(level => {
+  levels.forEach(level => {
     let winstonOptions = {
-      ...options.winston,
-      filename: path.join(logsPath, level)
+      ...options,
+      transports: [
+        new DailyRotateFile({
+          filename: path.join(logsPath, `${level}-%DATE%.log`),
+          ...options.dailyRotateFile
+        })
+      ]
     }
-    loggers[level] = createLogger(winstonOptions)[alias(level)]
+
+    let logger = loggers[level] = createLogger(winstonOptions)
+
+    // console.log(logger)
+
+    if (isLocal) {
+      logger.add(new winston.transports.Console({
+        format: winston.format.simple()
+      }))
+    }
   })
 
   return loggerWrap(loggers)
@@ -76,8 +79,7 @@ function loggerWrap (logger) {
         ips: req.ips
       }
       !isEmptyObject(cusInfo) && Object.assign(info, cusInfo)
-      isLocal && console.error(colors.red(JSON.stringify(info, null, 2)))
-      logger.error(info)
+      logger.error.log('error', info)
     },
     access (self, cusInfo) {
       let req = self.request
@@ -89,8 +91,7 @@ function loggerWrap (logger) {
         ips: req.ips
       }
       !isEmptyObject(cusInfo) && Object.assign(info, cusInfo)
-      isLocal && console.log(colors.green(JSON.stringify(info, null, 2)))
-      logger.access(info)
+      logger.access.log('info', info)
     },
     warn (self, cusInfo) {
       let req = self.request
@@ -102,8 +103,7 @@ function loggerWrap (logger) {
         ips: req.ips
       }
       !isEmptyObject(cusInfo) && Object.assign(info, cusInfo)
-      isLocal && console.log(colors.yellow(JSON.stringify(info, null, 2)))
-      logger.access(info)
+      logger.warn.log('warn', info)
     }
   }
 }
