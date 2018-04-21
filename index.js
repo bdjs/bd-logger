@@ -51,7 +51,10 @@ module.exports = (options = {}) => {
 
     if (isLocal) {
       logger.add(new winston.transports.Console({
-        format: winston.format.simple()
+        format: winston.format.combine(
+          winston.format.colorize({ all: true }),
+          winston.format.simple()
+        )
       }))
     }
   })
@@ -79,7 +82,7 @@ function loggerWrap (logger) {
         ips: req.ips
       }
       !isEmptyObject(cusInfo) && Object.assign(info, cusInfo)
-      logger.error.log('error', info)
+      logger.error.error(JSON.stringify(info))
     },
     access (self, cusInfo) {
       let req = self.request
@@ -91,7 +94,7 @@ function loggerWrap (logger) {
         ips: req.ips
       }
       !isEmptyObject(cusInfo) && Object.assign(info, cusInfo)
-      logger.access.log('info', info)
+      logger.access.info(JSON.stringify(info))
     },
     warn (self, cusInfo) {
       let req = self.request
@@ -103,7 +106,7 @@ function loggerWrap (logger) {
         ips: req.ips
       }
       !isEmptyObject(cusInfo) && Object.assign(info, cusInfo)
-      logger.warn.log('warn', info)
+      logger.warn.warn(JSON.stringify(info))
     }
   }
 }
