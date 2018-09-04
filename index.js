@@ -1,5 +1,3 @@
-'use strict'
-
 const path = require('path')
 const winston = require('winston')
 const fs = require('fs')
@@ -11,41 +9,42 @@ const isLocal = process.env.NODE_ENV === 'local'
 
 const levels = ['access', 'error', 'warn']
 
-let createLogger = options => winston.createLogger(options)
+const createLogger = options => winston.createLogger(options)
 
-let defaultOptions = {
+const defaultOptions = {
   app: 'app',
   dailyRotateFile: {
     datePattern: 'YYYY-MM-DD',
     maxSize: '20m',
-    maxFiles: '14d'
+    maxFiles: '14d',
   },
   root: path.dirname(process.mainModule.filename),
-  format: winston.format.json()
+  format: winston.format.json(),
 }
 
 module.exports = (options = {}) => {
   options = {
     ...defaultOptions,
-    ...options
+    ...options,
   }
-  let logsPath = path.join(options.root, 'logs', options.app)
+  const logsPath = path.join(options.root, 'logs', options.app)
   if (!fs.existsSync(logsPath)) {
     mkdirp.sync(logsPath)
   }
-  let loggers = {}
+  const loggers = {}
   levels.forEach(level => {
-    let winstonOptions = {
+    const winstonOptions = {
       ...options,
       transports: [
         new DailyRotateFile({
           filename: path.join(logsPath, `${level}-%DATE%.log`),
-          ...options.dailyRotateFile
-        })
-      ]
+          ...options.dailyRotateFile,
+        }),
+      ],
     }
 
-    let logger = loggers[level] = createLogger(winstonOptions)
+    const logger = createLogger(winstonOptions)
+    loggers[level] = logger
 
     // console.log(logger)
 
@@ -54,7 +53,7 @@ module.exports = (options = {}) => {
         format: winston.format.combine(
           winston.format.colorize({ all: true }),
           winston.format.simple()
-        )
+        ),
       }))
     }
   })
@@ -70,8 +69,8 @@ module.exports = (options = {}) => {
 function loggerWrap (logger) {
   return {
     error (self, err, cusInfo) {
-      let req = self.request
-      let info = {
+      const req = self.request
+      const info = {
         err_msg: err.message,
         err_name: err.name,
         err_stack: err.stack,
@@ -79,35 +78,41 @@ function loggerWrap (logger) {
         href: req.href,
         header: req.header,
         ip: req.ip,
-        ips: req.ips
+        ips: req.ips,
       }
-      !isEmptyObject(cusInfo) && Object.assign(info, cusInfo)
+      if (!isEmptyObject(cusInfo)) {
+        Object.assign(info, cusInfo)
+      }
       logger.error.error(JSON.stringify(info))
     },
     access (self, cusInfo) {
-      let req = self.request
-      let info = {
+      const req = self.request
+      const info = {
         url: req.url,
         href: req.href,
         header: req.header,
         ip: req.ip,
-        ips: req.ips
+        ips: req.ips,
       }
-      !isEmptyObject(cusInfo) && Object.assign(info, cusInfo)
+      if (!isEmptyObject(cusInfo)) {
+        Object.assign(info, cusInfo)
+      }
       logger.access.info(JSON.stringify(info))
     },
     warn (self, cusInfo) {
-      let req = self.request
-      let info = {
+      const req = self.request
+      const info = {
         url: req.url,
         href: req.href,
         header: req.header,
         ip: req.ip,
-        ips: req.ips
+        ips: req.ips,
       }
-      !isEmptyObject(cusInfo) && Object.assign(info, cusInfo)
+      if (!isEmptyObject(cusInfo)) {
+        Object.assign(info, cusInfo)
+      }
       logger.warn.warn(JSON.stringify(info))
-    }
+    },
   }
 }
 
