@@ -79,11 +79,12 @@ function loggerWrap (logger) {
         header: req.header,
         ip: req.ip,
         ips: req.ips,
+        timestamp: timestamp(),
       }
       if (!isEmptyObject(cusInfo)) {
         Object.assign(info, cusInfo)
       }
-      logger.error.error(JSON.stringify(info))
+      logger.error.error(info)
     },
     access (self, cusInfo) {
       const req = self.request
@@ -93,11 +94,12 @@ function loggerWrap (logger) {
         header: req.header,
         ip: req.ip,
         ips: req.ips,
+        timestamp: timestamp(),
       }
       if (!isEmptyObject(cusInfo)) {
         Object.assign(info, cusInfo)
       }
-      logger.access.info(JSON.stringify(info))
+      logger.access.info(info)
     },
     warn (self, cusInfo) {
       const req = self.request
@@ -107,11 +109,12 @@ function loggerWrap (logger) {
         header: req.header,
         ip: req.ip,
         ips: req.ips,
+        timestamp: timestamp(),
       }
       if (!isEmptyObject(cusInfo)) {
         Object.assign(info, cusInfo)
       }
-      logger.warn.warn(JSON.stringify(info))
+      logger.warn.warn(info)
     },
   }
 }
@@ -123,4 +126,16 @@ function loggerWrap (logger) {
  */
 function isEmptyObject (obj) {
   return !obj || Object.keys(obj).length === 0
+}
+
+const padZero = str => String(str).padStart(2, 0)
+
+/**
+ * 一个简单的时间戳输出，如果后期需要更多样的输出，建议使用 moment
+ * @return {string}      YYYY-MM-DD HH:mm:SS
+ */
+function timestamp () {
+  const date = new Date()
+
+  return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())} ${padZero(date.getHours())}:${padZero(date.getMinutes())}:${padZero(date.getSeconds())}`
 }
